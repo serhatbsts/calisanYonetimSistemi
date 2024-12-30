@@ -3,7 +3,8 @@ package com.example.calisanYonetimSistemi.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 
 @Data
 @Entity
@@ -14,11 +15,11 @@ public class odemeler {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    Date odemeTarih;
+    LocalDate odemeTarih;
     String notlar;
 
     @ManyToOne
-    @JoinColumn(name = "calisanlar_id")
-    calisanlar calis;
+    @JoinColumn(name = "calisan_id")
+    calisanlar calisan;
 
 }

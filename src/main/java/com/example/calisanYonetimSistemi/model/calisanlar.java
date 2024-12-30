@@ -18,9 +18,10 @@ public class calisanlar {
     String soyAd;
     String pozisyon;
     String telNo;
-    String ePosta;
-    //sifre
+    String email;
+    String password;
     BigDecimal maas;
+
 
     @ManyToOne
     @JoinColumn(name = "departman_id")

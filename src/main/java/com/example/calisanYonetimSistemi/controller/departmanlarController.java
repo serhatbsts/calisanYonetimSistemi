@@ -14,7 +14,7 @@ import java.util.List;
 public class departmanlarController {
 
     private final departmanService departmanService;
-
+    
     @Autowired
     public departmanlarController(departmanService departmanService) {
         this.departmanService = departmanService;

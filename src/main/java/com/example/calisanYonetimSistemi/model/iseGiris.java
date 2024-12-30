@@ -2,7 +2,9 @@ package com.example.calisanYonetimSistemi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -14,11 +16,11 @@ public class iseGiris {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    Date tarih;
+    LocalDate girisTarihi;
 
     @ManyToOne
     @JoinColumn(name = "calisanlar_id")
-    calisanlar calis;
+    calisanlar calisan;
 
 
 }

@@ -16,9 +16,4 @@ public class departmanlar {
     String departmanAdi;
     String adres;
 
-
-    @ManyToOne
-    @JoinColumn(name = "calisanlar_id")
-    calisanlar calis;
-
 }

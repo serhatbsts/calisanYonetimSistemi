@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departman Çalışanları</title>
+    <style>
+        /* Stil kodları buraya gelecek */
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1 id="departmentNameTitle">Departman Çalışanları</h1>
+        <button onclick="goBack()">Geri Dön</button>
+    </header>
+
+    <div class="employee-list" id="employeeList">
+        <p>Yükleniyor...</p>
+    </div>
+</div>
+
+<footer>
+    © BEŞTAŞ GRUP SİNCE 1975
+</footer>
+
+<script>
+    async function fetchDepartmentEmployees() {
+        const userId = localStorage.getItem('userId');
+        const departmentId = localStorage.getItem('departmentId');
+        const departmentName = localStorage.getItem('departmentName');
+
+        if (!userId) {
+            alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        if (!departmentId) {
+            alert('Departman ID bulunamadı. Lütfen yöneticinize başvurun.');
+            return;
+        }
+
+        document.getElementById('departmentNameTitle').textContent = `${departmentName} Departmanı Çalışanları`;
+
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/byDepartment/${departmentId}`);
+            if (!response.ok) {
+                throw new Error('Çalışanlar alınamadı');
+            }
+
+            const employees = await response.json();
+            displayEmployees(employees);
+        } catch (error) {
+            console.error('Hata:', error);
+            document.getElementById('employeeList').innerHTML = '<p>Çalışanlar alınamadı.</p>';
+        }
+    }
+
+    function displayEmployees(employees) {
+        const employeeList = document.getElementById('employeeList');
+        employeeList.innerHTML = '';
+
+        if (employees.length === 0) {
+            employeeList.innerHTML = '<p>Hiç çalışan bulunmamaktadır.</p>';
+            return;
+        }
+
+        employees.forEach(employee => {
+            const employeeCard = document.createElement('div');
+            employeeCard.className = 'employee-card';
+            employeeCard.innerHTML = `
+                <p><strong>Ad:</strong> ${employee.ad} ${employee.soyAd}</p>
+                <p><strong>E-posta:</strong> ${employee.email || 'Bilinmiyor'}</p>
+                <p><strong>Telefon:</strong> ${employee.telNo || 'Bilinmiyor'}</p>
+                <p><strong>Maaş:</strong> ${employee.maas ? employee.maas + ' TL' : 'Bilinmiyor'}</p>
+                <button class="fire-btn" onclick="fireEmployee(${employee.id})">İşten Çıkar</button>
+            `;
+            employeeList.appendChild(employeeCard);
+        });
+    }
+
+    async function fireEmployee(employeeId) {
+        if (!confirm('Bu çalışanı işten çıkarmak istediğinize emin misiniz?')) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/${employeeId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) throw new Error('Çalışan silinemedi');
+            alert('Çalışan başarıyla işten çıkarıldı');
+            fetchDepartmentEmployees();
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Çalışan silinirken bir hata oluştu.');
+        }
+    }
+
+    function goBack() {
+        window.location.href = '../homepage/homepage.html';
+    }
+
+    window.onload = fetchDepartmentEmployees;
+</script>
+</body>
+</html>

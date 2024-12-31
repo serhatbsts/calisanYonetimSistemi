@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çalışan Düzenle</title>
+    <style>
+        body > div > header > button{
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .input_calisan{
+            background-color: white;
+            color: Black;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: solid 2px #007BFF;
+        }
+
+        #editForm > button{
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <button onclick="goBack()">Geri Dön</button>
+        <h1>Çalışan Düzenle</h1>
+    </header>
+
+    <form id="editForm">
+        <label for="ad">Ad:</label>
+        <input class="input_calisan" type="text" id="ad" placeholder="Ad" required>
+
+        <label for="soyAd">Soyad:</label>
+        <input class="input_calisan" type="text" id="soyAd" placeholder="Soyad" required>
+
+        <label for="email">E-posta:</label>
+        <input class="input_calisan" type="email" id="email" placeholder="E-posta" required>
+
+        <label for="telNo">Telefon:</label>
+        <input class="input_calisan" type="tel" id="telNo" placeholder="Telefon" required>
+
+        <label for="pozisyon">Pozisyon:</label>
+        <input class="input_calisan" type="text" id="pozisyon" placeholder="Pozisyon" required>
+
+        <label for="maas">Maaş:</label>
+        <input class="input_calisan" type="number" id="maas" placeholder="Maaş" required>
+
+        <button type="submit">Kaydet</button>
+    </form>
+</div>
+
+<script>
+    const employeeId = new URLSearchParams(window.location.search).get('id');
+
+    async function fetchEmployeeDetails() {
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/${employeeId}`);
+            if (!response.ok) throw new Error('Çalışan bilgileri alınamadı');
+            const employee = await response.json();
+
+            document.getElementById('ad').value = employee.ad || '';
+            document.getElementById('soyAd').value = employee.soyAd || '';
+            document.getElementById('email').value = employee.email || '';
+            document.getElementById('telNo').value = employee.telNo || '';
+            document.getElementById('pozisyon').value = employee.pozisyon || '';
+            document.getElementById('maas').value = employee.maas || '';
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Çalışan bilgileri alınamadı.');
+        }
+    }
+
+    async function updateEmployee(event) {
+        event.preventDefault();
+
+        const updatedEmployee = {
+            ad: document.getElementById('ad').value,
+            soyAd: document.getElementById('soyAd').value,
+            email: document.getElementById('email').value,
+            telNo: document.getElementById('telNo').value,
+            pozisyon: document.getElementById('pozisyon').value,
+            maas: parseFloat(document.getElementById('maas').value) || 0,
+        };
+
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/${employeeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedEmployee),
+            });
+
+            if (!response.ok) throw new Error('Çalışan güncellenemedi');
+            alert('Çalışan başarıyla güncellendi');
+            goBack();
+        } catch (error) {
+            console.error(error);
+            alert('Çalışan güncellenemedi.');
+        }
+    }
+
+    function goBack() {
+        window.location.href = '../employees_page/employees_page.html';
+    }
+
+    window.onload = async () => {
+        await fetchEmployeeDetails();
+        document.getElementById('editForm').addEventListener('submit', updateEmployee);
+    };
+</script>
+</body>
+</html>

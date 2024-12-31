@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departmanlar</title>
+    <link rel="stylesheet" href="departments_page.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <button class="back-btn" onclick="goBack()">Geri Dön</button>
+        <h1>Departmanlar</h1>
+    </header>
+
+    <button class="add-department-btn" onclick="showAddDepartmentForm()">Departman Ekle</button>
+
+    <!-- Departman Ekleme Formu -->
+    <div class="form-container" id="addDepartmentForm" style="display: none;">
+        <h2>Yeni Departman Ekle</h2>
+        <input type="text" id="newDepartmentName" placeholder="Departman Adı">
+        <input type="text" id="newDepartmentAddress" placeholder="Adres">
+        <button onclick="addDepartment()">Kaydet</button>
+        <button onclick="hideAddDepartmentForm()">İptal</button>
+    </div>
+
+    <!-- Departmanlar Listesi -->
+    <div class="department-list" id="departmentList">
+        <p>Yükleniyor...</p>
+    </div>
+
+    <!-- Çalışanlar Listesi -->
+    <div class="employee-list" id="employeeList" style="display: none;">
+        <h2 id="departmentName">Çalışanlar</h2>
+        <button class="back-btn" onclick="hideEmployeeList()">Geri</button>
+        <div id="employeeContainer"></div>
+    </div>
+</div>
+
+<footer>
+    © Şirket İsmi 2024
+</footer>
+
+<script>
+    async function fetchDepartments() {
+        const userId = localStorage.getItem('userId'); // Kullanıcı ID'sini al
+
+        try {
+            const response = await fetch(`http://localhost:8080/departmanlar?userId=${userId}`);
+            if (response.status === 403) {
+                alert('Bu sayfaya erişim izniniz yok.');
+                window.location.href = '../homepage/homepage.html'; // Ana sayfaya yönlendir
+                return;
+            }
+            if (!response.ok) throw new Error('Departmanlar alınamadı');
+            const departments = await response.json();
+            displayDepartments(departments);
+        } catch (error) {
+            console.error('Hata:', error);
+            document.getElementById('departmentList').innerHTML = '<p>Departmanlar alınamadı.</p>';
+        }
+    }
+
+
+    function displayDepartments(departments) {
+        const departmentList = document.getElementById('departmentList');
+        departmentList.innerHTML = '';
+
+        if (departments.length === 0) {
+            departmentList.innerHTML = '<p>Hiç departman bulunamadı.</p>';
+            return;
+        }
+
+        departments.forEach(department => {
+            const departmentCard = document.createElement('div');
+            departmentCard.className = 'department-card';
+            departmentCard.innerHTML = `
+                <h2>${department.departmanAdi}</h2>
+                <p><strong>Adres:</strong> ${department.adres}</p>
+                <button class="departman_btn" onclick="showEditDepartmentForm(${department.id}, '${department.departmanAdi}', '${department.adres}')">Düzenle</button>
+                <button class="departman_btn" onclick="deleteDepartment(${department.id})">Sil</button>
+                <button class="departman_btn" onclick="fetchEmployeesByDepartment(${department.id}, '${department.departmanAdi}')">Çalışanları Gör</button>
+            `;
+            departmentList.appendChild(departmentCard);
+        });
+    }
+
+    async function fetchEmployeesByDepartment(departmentId, departmentName) {
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/byDepartment/${departmentId}`);
+            if (!response.ok) throw new Error('Çalışanlar alınamadı');
+            const employees = await response.json();
+            displayEmployees(employees, departmentName);
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Çalışanlar alınamadı.');
+        }
+    }
+
+    function displayEmployees(employees, departmentName) {
+        const employeeList = document.getElementById('employeeList');
+        const employeeContainer = document.getElementById('employeeContainer');
+        const departmentNameElement = document.getElementById('departmentName');
+
+        employeeList.style.display = 'block';
+        document.getElementById('departmentList').style.display = 'none';
+        departmentNameElement.textContent = `${departmentName} Çalışanları`;
+
+        employeeContainer.innerHTML = '';
+
+        if (employees.length === 0) {
+            employeeContainer.innerHTML = '<p>Bu departmanda hiç çalışan bulunmamaktadır.</p>';
+            return;
+        }
+
+        employees.forEach(employee => {
+            const employeeCard = document.createElement('div');
+            employeeCard.className = 'employee-card';
+            employeeCard.innerHTML = `<p>${employee.ad} ${employee.soyAd}</p>`;
+            employeeContainer.appendChild(employeeCard);
+        });
+    }
+
+    function hideEmployeeList() {
+        document.getElementById('employeeList').style.display = 'none';
+        document.getElementById('departmentList').style.display = 'block';
+    }
+
+    function showAddDepartmentForm() {
+        document.getElementById('addDepartmentForm').style.display = 'block';
+    }
+
+    function hideAddDepartmentForm() {
+        document.getElementById('addDepartmentForm').style.display = 'none';
+    }
+
+    async function addDepartment() {
+        const name = document.getElementById('newDepartmentName').value;
+        const address = document.getElementById('newDepartmentAddress').value;
+
+        if (!name || !address) {
+            alert('Tüm alanları doldurunuz!');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8080/departmanlar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ departmanAdi: name, adres: address })
+            });
+
+            if (!response.ok) throw new Error('Departman eklenemedi');
+            alert('Departman başarıyla eklendi');
+            hideAddDepartmentForm();
+            fetchDepartments();
+        } catch (error) {
+            console.error('Hata:', error);
+        }
+    }
+
+    async function deleteDepartment(departmentId) {
+        if (!confirm('Bu departmanı silmek istediğinize emin misiniz? Çalışanların departmanları kaldırılacak!')) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/departmanlar/${departmentId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Departman silinemedi');
+            alert('Departman başarıyla silindi. Çalışanların departmanları kaldırıldı.');
+            fetchDepartments(); // Departmanları yeniden yükle
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Departman silinemedi.');
+        }
+    }
+
+    function showEditDepartmentForm(departmentId, currentName, currentAddress) {
+        const formHtml = `
+            <div class="form-container" id="editDepartmentForm">
+                <h2>Departman Düzenle</h2>
+                <input type="text" id="editDepartmentName" value="${currentName}">
+                <input type="text" id="editDepartmentAddress" value="${currentAddress}">
+                <button onclick="editDepartment(${departmentId})">Kaydet</button>
+                <button onclick="hideEditDepartmentForm()">İptal</button>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', formHtml);
+    }
+
+    function hideEditDepartmentForm() {
+        const form = document.getElementById('editDepartmentForm');
+        if (form) form.remove();
+    }
+
+    async function editDepartment(departmentId) {
+        const name = document.getElementById('editDepartmentName').value;
+        const address = document.getElementById('editDepartmentAddress').value;
+
+        if (!name || !address) {
+            alert('Tüm alanları doldurunuz!');
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/departmanlar/${departmentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ departmanAdi: name, adres: address })
+            });
+
+            if (!response.ok) throw new Error('Departman düzenlenemedi');
+            alert('Departman başarıyla güncellendi');
+            hideEditDepartmentForm();
+            fetchDepartments();
+        } catch (error) {
+            console.error('Hata:', error);
+        }
+    }
+
+    function goBack() {
+        window.location.href = '../homepage/homepage.html';
+    }
+
+    window.onload = fetchDepartments;
+</script>
+</body>
+</html>

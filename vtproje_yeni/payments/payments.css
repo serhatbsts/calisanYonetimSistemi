@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 20px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+.back-btn {
+    background-color: white;
+    color: #007BFF;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.payment-list {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.payment-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.payment-card h2 {
+    margin-top: 0;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+}
+
+#searchInput{
+    margin-top: 15px;
+    width: 446px;
+    height: 16px;
+    border-radius: 15px;
+    padding: 17px;
+    border: solid 1px blue;
+}
+
+#calisanId{
+    margin-top: 15px;
+    width: 93px;
+    height: 8px;
+    border-radius: 8px;
+    padding: 10px;
+    border: solid 2px #007BFF
+}
+#odemeTarih{
+    margin-top: 15px;
+    width: 115px;
+    height: 8px;
+    border-radius: 8px;
+    padding: 10px;
+    border: solid 2px #007BFF
+}
+
+#notlar{
+    margin-top: 15px;
+    width: 135px;
+    height: 8px;
+    border-radius: 8px;
+    padding: 10px;
+    border: solid 2px #007BFF
+}
+
+#toplamOdeme{
+    margin-top: 15px;
+    width: 165px;
+    height: 8px;
+    border-radius: 8px;
+    padding: 10px;
+    border: solid 2px #007BFF
+}
+
+#addPaymentForm > button{
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+}

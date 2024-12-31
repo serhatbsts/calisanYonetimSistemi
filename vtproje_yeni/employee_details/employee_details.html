@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kişisel Bilgiler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        .details p {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .back-btn {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .back-btn:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <button class="back-btn" onclick="goBack()">Geri Dön</button>
+        <h1>Kişisel Bilgiler</h1>
+    </header>
+
+    <div class="details">
+        <p id="ad">Ad: </p>
+        <p id="soyAd">Soyad: </p>
+        <p id="email">E-posta: </p>
+        <p id="pozisyon">Pozisyon: </p>
+        <p id="telNo">Telefon: </p>
+    </div>
+</div>
+
+<footer>
+    © Şirket İsmi 2024
+</footer>
+
+<script>
+    async function fetchEmployeeDetails() {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/${userId}`);
+            if (!response.ok) throw new Error('Kullanıcı bilgileri alınamadı');
+            const user = await response.json();
+
+            document.getElementById('ad').textContent = `Ad: ${user.ad}`;
+            document.getElementById('soyAd').textContent = `Soyad: ${user.soyAd}`;
+            document.getElementById('email').textContent = `E-posta: ${user.email}`;
+            document.getElementById('pozisyon').textContent = `Pozisyon: ${user.pozisyon}`;
+            document.getElementById('telNo').textContent = `Telefon: ${user.telNo}`;
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Kullanıcı bilgileri alınamadı.');
+        }
+    }
+
+    function goBack() {
+        window.location.href = '../homepage/homepage.html';
+    }
+
+    window.onload = fetchEmployeeDetails;
+</script>
+</body>
+</html>

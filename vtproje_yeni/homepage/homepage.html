@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Sayfa</title>
+    <link rel="stylesheet" href="homepage.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <button class="logout-btn" onclick="handleLogout()">Çıkış Yap</button>
+        <h1 class="welcome-message" id="welcomeMessage"></h1>
+    </header>
+
+    <nav id="navigationMenu">
+        <ul></ul>
+    </nav>
+
+    <div class="content-grid">
+        <div class="card">
+            <h2>Duyurular</h2>
+            <div id="announcements">
+                <p>Henüz duyuru bulunmamaktadır.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Rol Özeti</h2>
+            <div id="roleDescription"></div>
+        </div>
+
+        <div class="card">
+            <h2>Hızlı Erişim</h2>
+            <div id="quickLinks"></div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    ©
+</footer>
+
+<script>
+    async function fetchUserData() {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/${userId}`);
+
+            if (!response.ok) {
+                throw new Error('Kullanıcı bilgileri alınamadı');
+            }
+
+            const user = await response.json();
+            if (user && user.ad && user.soyAd) {
+                document.getElementById('welcomeMessage').textContent = `Hoş Geldiniz, ${user.ad} ${user.soyAd}`;
+                document.getElementById('roleDescription').textContent = user.pozisyon;
+
+                // Departman adını ve ID'sini kaydet
+                if (user.departman) {
+                    if (user.departman.departmanAdi) {
+                        localStorage.setItem('departmentName', user.departman.departmanAdi);
+                    }
+                    if (user.departman.id) {
+                        localStorage.setItem('departmentId', user.departman.id);
+                    }
+                } else {
+                    console.warn('Departman bilgisi bulunamadı.');
+                }
+
+                const navList = document.querySelector('#navigationMenu ul');
+                navList.innerHTML = ''; // Önce temizle
+                const roleConfig = getRoleConfig(user.pozisyon);
+
+                roleConfig.menuItems.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = item.link;
+                    a.textContent = item.text;
+                    li.appendChild(a);
+                    navList.appendChild(li);
+                    setTimeout(() => (li.style.opacity = '1'), index * 100);
+                });
+            } else {
+                alert('Kullanıcı bilgileri eksik veya hatalı.');
+            }
+
+        } catch (error) {
+            alert('Hata: ' + error.message);
+        }
+    }
+
+    function getRoleConfig(role) {
+        const roleConfig = {
+            'ADMIN': {
+                menuItems: [
+                    {text: 'Tüm Çalışanlar', link: '../employees_page/employees_page.html'},
+                    {text: 'İş Kayıtları', link: '../job_entries_page/job_entries_page.html'},
+                    {text: 'Ödemeler', link: '../payments/payments.html'},
+                    {text: 'Departmanlar', link: '../departments_page/departments_page.html'}
+                ]
+            },
+            'GENEL_MUDUR': {
+                menuItems: [
+                    {text: 'Tüm Çalışanlar', link: '../employees_page/employees_page.html'},
+                    {text: 'İş Kayıtları', link: '../job_entries_page/job_entries_page.html'},
+                    {text: 'Ödemeler', link: '../payments/payments.html'},
+                    {text: 'Departmanlar', link: '../departments_page/departments_page.html'}
+                ]
+            },
+            'DEPARTMAN_MUDUR': {
+                menuItems: [
+                    {text: 'Kişisel Bilgilerim', link: `../employee_details/employee_details.html?userId=${localStorage.getItem('userId')}`},
+                ]
+            },
+            'PERSONEL': {
+                menuItems: [
+                    {text: 'Kişisel Bilgilerim', link: `../employee_details/employee_details.html?userId=${localStorage.getItem('userId')}`},
+                ]
+            }
+        };
+        return roleConfig[role] || {menuItems: []};
+    }
+
+    window.onload = fetchUserData;
+
+    function handleLogout() {
+        localStorage.removeItem('userId');
+        localStorage.removeItem('departmentName');
+        localStorage.removeItem('departmentId');
+        window.location.href = '../login_page/index.html'; // Çıkış yaptıktan sonra giriş sayfasına yönlendir
+    }
+</script>
+</body>
+</html>

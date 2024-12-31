@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödemeler</title>
+    <link rel="stylesheet" href="payments.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <button class="back-btn" onclick="goBack()">Geri Dön</button>
+        <h1>Ödemeler</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Aramak istediğiniz çalışanın adını veya soyadını girin..." oninput="filterPayments()">
+    </div>
+
+    <div class="add-payment">
+        <h2>Yeni Ödeme Ekle</h2>
+        <form id="addPaymentForm">
+            <label for="calisanId">Çalışan ID:</label>
+            <input type="number" id="calisanId" placeholder="Çalışan ID" required>
+
+            <label for="odemeTarih">Ödeme Tarihi:</label>
+            <input type="date" id="odemeTarih" required>
+
+            <label for="notlar">Notlar:</label>
+            <input type="text" id="notlar" placeholder="Ödeme ile ilgili notlar" required>
+
+            <label for="toplamOdeme">Toplam Ödeme (₺):</label>
+            <input type="number" id="toplamOdeme" placeholder="Toplam ödeme miktarı" required>
+
+            <button type="submit">Ödeme Ekle</button>
+        </form>
+    </div>
+
+    <div class="payment-list" id="paymentList">
+        <p>Yükleniyor...</p>
+    </div>
+</div>
+
+<footer>
+    © Şirket İsmi 2024
+</footer>
+
+<script>
+    let paymentsData = []; // Tüm ödemeleri depolamak için global bir değişken
+
+    async function fetchPayments() {
+        try {
+            const response = await fetch('http://localhost:8080/odemeler'); // Backend'den ödemeleri alır
+            if (!response.ok) {
+                throw new Error('Ödemeler alınamadı');
+            }
+            const payments = await response.json();
+            paymentsData = payments; // Gelen verileri global değişkene kaydet
+            displayPayments(payments);
+        } catch (error) {
+            console.error('Hata:', error);
+            document.getElementById('paymentList').innerHTML = '<p>Ödemeler alınamadı.</p>';
+        }
+    }
+
+    function displayPayments(payments) {
+        const paymentList = document.getElementById('paymentList');
+        paymentList.innerHTML = ''; // Listeyi temizle
+
+        if (payments.length === 0) {
+            paymentList.innerHTML = '<p>Hiç ödeme kaydı bulunamadı.</p>';
+            return;
+        }
+
+        payments.forEach(payment => {
+            const paymentCard = document.createElement('div');
+            paymentCard.className = 'payment-card';
+            paymentCard.innerHTML = `
+                <h2>${payment.calisanAd || 'Bilinmiyor'} ${payment.calisanSoyad || ''}</h2>
+                <p><strong>Ödeme Tarihi:</strong> ${payment.odemeTarih}</p>
+                <p><strong>Notlar:</strong> ${payment.notlar || 'Belirtilmemiş'}</p>
+                <p><strong>Toplam Ödeme:</strong> ${payment.toplamOdeme || 'Belirtilmemiş'} ₺</p>
+            `;
+            paymentList.appendChild(paymentCard);
+        });
+    }
+
+    async function addPayment(event) {
+        event.preventDefault(); // Formun sayfayı yenilemesini engelle
+
+        const calisanId = document.getElementById('calisanId').value;
+        const odemeTarih = document.getElementById('odemeTarih').value;
+        const notlar = document.getElementById('notlar').value;
+        const toplamOdeme = document.getElementById('toplamOdeme').value;
+
+        const newPayment = {
+            calisanId: calisanId,
+            odemeTarih: odemeTarih,
+            notlar: notlar,
+            toplamOdeme: toplamOdeme
+        };
+
+        try {
+            const response = await fetch('http://localhost:8080/odemeler', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newPayment)
+            });
+
+            if (response.ok) {
+                alert('Ödeme başarıyla eklendi!');
+                fetchPayments(); // Ödemeler listesini güncelle
+                document.getElementById('addPaymentForm').reset(); // Formu temizle
+            } else {
+                alert('Ödeme eklenirken bir hata oluştu.');
+            }
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Bir hata oluştu.');
+        }
+    }
+
+    function filterPayments() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const filteredPayments = paymentsData.filter(payment =>
+            (payment.calisanAd && payment.calisanAd.toLowerCase().includes(searchInput)) ||
+            (payment.calisanSoyad && payment.calisanSoyad.toLowerCase().includes(searchInput))
+        );
+        displayPayments(filteredPayments);
+    }
+
+    function goBack() {
+        window.location.href = '../homepage/homepage.html'; // Ana sayfaya geri dön
+    }
+
+    document.getElementById('addPaymentForm').addEventListener('submit', addPayment); // Ödeme ekleme formu gönderildiğinde çalışır
+    window.onload = fetchPayments; // Sayfa yüklendiğinde ödemeleri getir
+</script>
+</body>
+</html>

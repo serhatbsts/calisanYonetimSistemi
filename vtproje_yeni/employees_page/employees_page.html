@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çalışanlar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .search-container input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .employee-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .employee-card {
+            padding: 10px;
+            background-color: #f3f3f3;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .employee-card h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .employee-card p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .button-container {
+            margin-top: 10px;
+        }
+
+        .button-container button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .back-btn{
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .edit-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <button class="back-btn" onclick="goBack()">Geri Dön</button>
+        <h1>Çalışan Listesi</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Aramak istediğiniz kelimeyi yazın..." oninput="filterEmployees()">
+    </div>
+
+    <div class="employee-list" id="employeeList">
+        <p>Yükleniyor...</p>
+    </div>
+</div>
+
+<footer>
+    © Şirket İsmi 2024
+</footer>
+
+<script>
+    let allEmployees = []; // Tüm çalışanları saklamak için bir değişken
+
+    async function fetchEmployees() {
+        try {
+            const response = await fetch('http://localhost:8080/calisanlar');
+            if (!response.ok) throw new Error('Çalışan bilgileri alınamadı');
+            const employees = await response.json();
+            allEmployees = employees; // Gelen çalışanları kaydet
+            displayEmployees(employees);
+        } catch (error) {
+            console.error('Hata:', error);
+            document.getElementById('employeeList').innerHTML = '<p>Çalışan bilgileri alınamadı.</p>';
+        }
+    }
+
+    function displayEmployees(employees) {
+        const employeeList = document.getElementById('employeeList');
+        employeeList.innerHTML = '';
+
+        if (employees.length === 0) {
+            employeeList.innerHTML = '<p>Hiç çalışan bulunamadı.</p>';
+            return;
+        }
+
+        employees.forEach(employee => {
+            const employeeCard = document.createElement('div');
+            employeeCard.className = 'employee-card';
+            employeeCard.innerHTML = `
+                <h2>${employee.ad} ${employee.soyAd} (ID: ${employee.id})</h2>
+                <p><strong>E-posta:</strong> ${employee.email}</p>
+                <p><strong>Pozisyon:</strong> ${employee.pozisyon}</p>
+                <p><strong>Telefon:</strong> ${employee.telNo}</p>
+                <p><strong>Maaş:</strong> ${employee.maas || 'Belirtilmemiş'} ₺</p>
+                <p><strong>Departman:</strong> ${employee.departmanAdi || 'Belirtilmemiş'}</p>
+                <div class="button-container">
+                    <button class="edit-btn" onclick="goToEditPage(${employee.id})">Düzenle</button>
+                    <button class="delete-btn" onclick="deleteEmployee(${employee.id})">Sil</button>
+                </div>
+            `;
+            employeeList.appendChild(employeeCard);
+        });
+    }
+
+    function filterEmployees() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const filteredEmployees = allEmployees.filter(employee =>
+            (employee.ad && employee.ad.toLowerCase().includes(searchInput)) ||
+            (employee.soyAd && employee.soyAd.toLowerCase().includes(searchInput)) ||
+            (employee.email && employee.email.toLowerCase().includes(searchInput)) ||
+            (employee.pozisyon && employee.pozisyon.toLowerCase().includes(searchInput))
+        );
+        displayEmployees(filteredEmployees);
+    }
+
+    function goToEditPage(employeeId) {
+        window.location.href = `../edit_employee/edit_employee.html?id=${employeeId}`;
+    }
+
+    async function deleteEmployee(employeeId) {
+        if (!confirm('Bu çalışanı silmek istediğinize emin misiniz?')) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/calisanlar/${employeeId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Çalışan silinemedi');
+            alert('Çalışan başarıyla silindi.');
+            fetchEmployees();
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Çalışan silinirken bir hata oluştu.');
+        }
+    }
+
+    function goBack() {
+        window.location.href = '../homepage/homepage.html';
+    }
+
+    window.onload = fetchEmployees;
+</script>
+</body>
+</html>

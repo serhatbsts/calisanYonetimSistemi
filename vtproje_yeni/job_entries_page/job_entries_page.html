@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İş Kayıtları</title>
+    <link rel="stylesheet" href="job_entries_page.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <button class="back-btn" onclick="goBack()">Geri Dön</button>
+        <h1>İş Kayıtları</h1>
+    </header>
+
+    <div class="job-list" id="jobList">
+        <p>Yükleniyor...</p>
+    </div>
+</div>
+
+<footer>
+    © Şirket İsmi 2024
+</footer>
+
+<script>
+    async function fetchJobEntries() {
+        try {
+            const response = await fetch('http://localhost:8080/iseGiris');
+            if (!response.ok) {
+                throw new Error('İş kayıtları alınamadı');
+            }
+            const jobEntries = await response.json();
+            console.log('Backend Yanıtı:', jobEntries); // Backend'den gelen veriyi kontrol edin
+            displayJobEntries(jobEntries);
+        } catch (error) {
+            console.error('Hata:', error);
+            document.getElementById('jobList').innerHTML = '<p>İş kayıtları alınamadı.</p>';
+        }
+    }
+
+
+    function displayJobEntries(jobEntries) {
+        const jobList = document.getElementById('jobList');
+        jobList.innerHTML = ''; // Listeyi temizle
+
+        if (jobEntries.length === 0) {
+            jobList.innerHTML = '<p>Hiç iş kaydı bulunamadı.</p>';
+            return;
+        }
+
+        jobEntries.forEach(entry => {
+            const jobCard = document.createElement('div');
+            jobCard.className = 'job-card';
+            jobCard.innerHTML = `
+            <h2>${entry.calisanAd} ${entry.calisanSoyad}</h2>
+            <p><strong>Giriş Tarihi:</strong> ${entry.girisTarihi}</p>
+            <p><strong>Pozisyon:</strong> ${entry.pozisyon}</p>
+            <p><strong>Departman:</strong> ${entry.departmanAdi || 'Belirtilmemiş'}</p>
+        `;
+            jobList.appendChild(jobCard);
+        });
+    }
+
+
+
+
+    function goBack() {
+        window.location.href = '../homepage/homepage.html'; // Ana sayfaya geri dön
+    }
+
+    window.onload = fetchJobEntries; // Sayfa yüklendiğinde iş kayıtlarını getir
+</script>
+</body>
+</html>

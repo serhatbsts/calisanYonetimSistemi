@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol</title>
+    <link rel="stylesheet" href="../register/register.css">
+</head>
+<body>
+<div class="register-container">
+    <h2>Kayıt Ol</h2>
+    <form id="register-form">
+        <div class="form-group">
+            <input type="text" id="ad" placeholder="Adınız" required>
+            <div class="error-message" id="ad-error">Ad gereklidir</div>
+        </div>
+        <div class="form-group">
+            <input type="text" id="soyAd" placeholder="Soyadınız" required>
+            <div class="error-message" id="soyAd-error">Soyad gereklidir</div>
+        </div>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="E-posta adresiniz" required>
+            <div class="error-message" id="email-error">Geçerli bir e-posta gereklidir</div>
+        </div>
+        <div class="form-group">
+            <input type="tel" id="telNo" placeholder="Telefon numaranız" required>
+            <div class="error-message" id="telNo-error">Telefon numarası gereklidir</div>
+        </div>
+        <!-- Pozisyon inputunu kaldırıyoruz -->
+        <div class="form-group">
+            <select id="departman" required>
+                <option value="">Departman Seçiniz</option>
+                <option value="10">Muhasebe</option>
+                <option value="11">Bilişim</option>
+                <option value="12">Satış</option>
+                <option value="13">Pazarlama</option>
+                <option value="14">Operasyon</option>
+            </select>
+            <div class="error-message" id="departman-error">Departman seçilmelidir</div>
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Şifreniz" required>
+            <div class="error-message" id="password-error">Şifre gereklidir</div>
+        </div>
+        <button type="submit" class="register-btn">Kayıt Ol</button>
+        <div class="success-message" id="success-message" style="display: none;">Kayıt başarılı!</div>
+    </form>
+    <div class="login-container">
+        <p>Hesabınız var mı? <a href="../login_page/index.html" class="login-btn">Giriş Yap</a></p>
+    </div>
+</div>
+
+<footer>
+    <p>© 2024 Tüm Hakları Saklıdır</p>
+</footer>
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        // Formda girilen değerleri alalım
+        const ad = document.getElementById('ad').value;
+        const soyAd = document.getElementById('soyAd').value;
+        const email = document.getElementById('email').value;
+        const telNo = document.getElementById('telNo').value;
+        const password = document.getElementById('password').value;
+        const departmanId = document.getElementById('departman').value;
+
+        const pozisyon = "PERSONEL"; // Varsayılan pozisyon
+
+        clearErrors();
+
+        let valid = true;
+
+        // Doğrulama işlemleri
+        if (!ad) {
+            showError('ad-error');
+            valid = false;
+        }
+        if (!soyAd) {
+            showError('soyAd-error');
+            valid = false;
+        }
+        if (!email || !validateEmail(email)) {
+            showError('email-error');
+            valid = false;
+        }
+        if (!telNo) {
+            showError('telNo-error');
+            valid = false;
+        }
+        if (!departmanId) {
+            showError('departman-error');
+            valid = false;
+        }
+        if (!password) {
+            showError('password-error');
+            valid = false;
+        }
+
+        if (valid) {
+            try {
+                // Backend'e kullanıcı kaydı gönderme
+                const formData = { ad, soyAd, email, telNo, pozisyon, password, departmanId };
+
+                const response = await fetch('http://localhost:8080/calisanlar/createCalisan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error('Kayıt başarısız');
+
+                const user = await response.json();
+
+                alert('Kayıt başarılı!');
+                window.location.href = '../login_page/index.html';
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Kayıt sırasında bir hata oluştu');
+            }
+        }
+    });
+
+    function showError(id) {
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function clearErrors() {
+        const errors = document.querySelectorAll('.error-message');
+        errors.forEach(error => {
+            error.style.display = 'none';
+        });
+    }
+
+    function validateEmail(email) {
+        const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        return regex.test(email);
+    }
+</script>
+</body>
+</html>

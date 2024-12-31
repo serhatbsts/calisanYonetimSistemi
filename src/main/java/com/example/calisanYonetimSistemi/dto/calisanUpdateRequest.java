@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class calisanUpdateRequest {
 
@@ -14,4 +16,6 @@ public class calisanUpdateRequest {
     private String soyAd;
     private String pozisyon;
     private String telNo;
+    private BigDecimal maas;
+    private Long departmanId;
 }

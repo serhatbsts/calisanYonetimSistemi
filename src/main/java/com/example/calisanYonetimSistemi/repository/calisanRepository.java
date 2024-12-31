@@ -26,4 +26,6 @@ public interface calisanRepository extends JpaRepository<calisanlar,Long> {
     List<calisanlar> findAllByDepartmanAndPozisyonNot(departmanlar departman, String pozisyon);
 
     List<calisanlar> findAllByPozisyonNot(String pozisyon);
+
+
 }

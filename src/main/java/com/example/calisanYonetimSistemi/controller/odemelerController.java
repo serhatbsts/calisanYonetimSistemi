@@ -1,6 +1,6 @@
 package com.example.calisanYonetimSistemi.controller;
 
-import com.example.calisanYonetimSistemi.model.odemeler;
+import com.example.calisanYonetimSistemi.dto.OdemeDTO;
 import com.example.calisanYonetimSistemi.service.odemelerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,26 +22,25 @@ public class odemelerController {
 
     // Tüm ödemeleri getir
     @GetMapping
-    public ResponseEntity<List<odemeler>> getAllOdemeler() {
-        List<odemeler> odemelerList = odemelerService.getAllOdemeler();
+    public ResponseEntity<List<OdemeDTO>> getAllOdemeler() {
+        List<OdemeDTO> odemelerList = odemelerService.getAllOdemeler();
         return ResponseEntity.ok(odemelerList);
     }
 
     // Yeni bir ödeme ekle
     @PostMapping
-    public ResponseEntity<odemeler> saveOdeme(@RequestBody odemeler odeme) {
-        odemeler savedOdeme = odemelerService.saveOdeme(odeme);
+    public ResponseEntity<OdemeDTO> saveOdeme(@RequestBody OdemeDTO odemeDTO) {
+        OdemeDTO savedOdeme = odemelerService.saveOdeme(odemeDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOdeme);
     }
 
     // Belirli bir ödemeyi getir
     @GetMapping("/{id}")
-    public ResponseEntity<odemeler> getOdemeById(@PathVariable Long id) {
-        return odemelerService.getAllOdemeler()
-                .stream()
-                .filter(odeme -> odeme.getId().equals(id))
-                .findFirst()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<OdemeDTO> getOdemeById(@PathVariable Long id) {
+        OdemeDTO odeme = odemelerService.getOdemeById(id);
+        if (odeme != null) {
+            return ResponseEntity.ok(odeme);
+        }
+        return ResponseEntity.notFound().build();
     }
 }

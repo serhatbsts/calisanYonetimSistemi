@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface odemelerRepository extends JpaRepository<odemeler,Long>{
     List<odemeler> findByCalisan(calisanlar calisan);
+    void deleteAllByCalisanId(Long calisanId);
 }

@@ -1,5 +1,6 @@
 package com.example.calisanYonetimSistemi.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.cglib.core.Local;
@@ -18,8 +19,9 @@ public class iseGiris {
 
     LocalDate girisTarihi;
 
-    @ManyToOne
-    @JoinColumn(name = "calisanlar_id")
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "calisanlar_id", nullable = false)
+    @JsonBackReference
     calisanlar calisan;
 
 

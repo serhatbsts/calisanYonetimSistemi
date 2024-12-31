@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface iseGiriseRepository extends JpaRepository<iseGiris,Long> {
     List<iseGiris> findByCalisan(calisanlar calisan);
+    List<iseGiris> findByCalisanId(Long calisanId); // Çalışan ID'sine göre kayıt getir
+    void deleteAllByCalisanId(Long calisanId);
 }

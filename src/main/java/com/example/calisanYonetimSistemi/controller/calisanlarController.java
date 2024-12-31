@@ -4,9 +4,11 @@ import com.example.calisanYonetimSistemi.dto.CalisanDTO;
 import com.example.calisanYonetimSistemi.dto.calisanCreateRequest;
 import com.example.calisanYonetimSistemi.dto.calisanLoginRequest;
 import com.example.calisanYonetimSistemi.dto.calisanUpdateRequest;
+import com.example.calisanYonetimSistemi.maper.CalisanMapper;
 import com.example.calisanYonetimSistemi.model.calisanlar;
 import com.example.calisanYonetimSistemi.repository.calisanRepository;
 import com.example.calisanYonetimSistemi.service.calisanService;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +32,9 @@ public class calisanlarController {
 
     // Tüm çalışanları getir
     @GetMapping
-    public ResponseEntity<List<calisanlar>> getAllCalisanlar() {
-        List<calisanlar> calisanlarList = calisanService.getAllCalisanlar();
-        return ResponseEntity.ok(calisanlarList);
+    public ResponseEntity<List<CalisanDTO>> getAllCalisanlar() {
+        List<CalisanDTO> calisanlar = calisanService.getAllCalisanlar();
+        return ResponseEntity.ok(calisanlar);
     }
 
     @GetMapping("/accessible")
@@ -43,22 +45,23 @@ public class calisanlarController {
 
     //giriş kısmı
     @PostMapping("/login")
-    public ResponseEntity<CalisanDTO> login(@RequestBody calisanLoginRequest calisanLoginRequest) {
-        calisanlar calisan=calisanService.login(calisanLoginRequest.getEmail(),calisanLoginRequest.getPassword());
-        if(calisan!=null) {
-            CalisanDTO calisanDTO = calisanService.convertToDo(calisan);
-            return ResponseEntity.ok(calisanDTO);
-        }else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<CalisanDTO> login(@RequestBody calisanLoginRequest request) {
+        calisanlar calisan = calisanService.login(request.getEmail(), request.getPassword());
+        if (calisan != null) {
+            CalisanDTO dto = CalisanMapper.toCalisanDTO(calisan); // Mapper'ı bean olarak kullanıyoruz
+            System.out.println("Dönen JSON: " + dto); // Burada dönen veriyi kontrol edin
+            return ResponseEntity.ok(dto);
         }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
 
     @PostMapping("/createCalisan")
     public calisanlar createCalisan(@RequestBody calisanCreateRequest yeniCalisan) {
         return calisanService.saveCalisan(yeniCalisan);
     }
 
-    @PutMapping("/{calisanId}")
+  /* @PutMapping("/{calisanId}")
     public ResponseEntity<calisanlar> calisanGucelle(@PathVariable Long calisanId, @RequestBody calisanUpdateRequest updateCalisan) {
         calisanlar guncelCalisan=calisanService.updateCalisan(calisanId,updateCalisan);
         if(guncelCalisan!=null) {
@@ -67,6 +70,7 @@ public class calisanlarController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+  */
 
     // Belirli bir çalışanın detaylarını getir
  /*   @GetMapping("/{id}")
@@ -90,10 +94,22 @@ public class calisanlarController {
             return ResponseEntity.notFound().build(); // 404 Not Found
         }
     }
-    @DeleteMapping("/{calisanId}")
-    public ResponseEntity<String> deleteCalisan(@PathVariable Long calisanId) {
-        calisanService.deleteOneCalisan(calisanId);
-        return ResponseEntity.ok("Calişan Silindi!!!");
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCalisan(@PathVariable Long id) {
+        calisanService.deleteCalisan(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<calisanlar> updateEmployee(
+            @PathVariable Long id,
+            @RequestBody calisanUpdateRequest updateRequest) {
+        calisanlar updatedEmployee = calisanService.updateCalisan(id, updateRequest);
+        if (updatedEmployee != null) {
+            return ResponseEntity.ok(updatedEmployee);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

@@ -1,8 +1,11 @@
 package com.example.calisanYonetimSistemi.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -15,5 +18,10 @@ public class departmanlar {
 
     String departmanAdi;
     String adres;
+
+    @OneToMany(mappedBy = "departman", fetch = FetchType.LAZY)
+   // @JsonManagedReference // Döngüsel bağımlılığı tamamlar
+    private List<calisanlar> calisanlar;
+
 
 }

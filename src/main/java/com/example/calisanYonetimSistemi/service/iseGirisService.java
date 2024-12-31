@@ -2,6 +2,7 @@ package com.example.calisanYonetimSistemi.service;
 
 import com.example.calisanYonetimSistemi.model.iseGiris;
 import com.example.calisanYonetimSistemi.repository.iseGiriseRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ public class iseGirisService {
         this.iseGiriseRepository = iseGiriseRepository;
     }
 
+    @Transactional
     public List<iseGiris> getAllIseGiris() {
         return iseGiriseRepository.findAll();
     }
